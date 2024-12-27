@@ -1,8 +1,8 @@
 .anchor
 .DS_Store
+target/*
 !target/idl/
 !target/types/
-target
 **/*.rs.bk
 node_modules
 test-ledger
