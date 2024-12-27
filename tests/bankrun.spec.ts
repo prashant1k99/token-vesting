@@ -10,6 +10,8 @@ import { createMint } from "spl-token-bankrun";
 import NodeWallet from "@coral-xyz/anchor/dist/cjs/nodewallet";
 
 describe("Vesting Smart Contract Tests", () => {
+  let companyName = "Company Name";
+
   let beneficiary: Keypair;
   let context: ProgramTestContext;
   let provider: BankrunProvider;
@@ -19,6 +21,9 @@ describe("Vesting Smart Contract Tests", () => {
   let mint: PublicKey;
   let beneficiaryProvider: BankrunProvider;
   let beneficiaryProgram: Program<VestingDapp>;
+  let vestingAccountKey: PublicKey;
+  let treasuryTokenAccount: PublicKey;
+  let employeeAccount: PublicKey;
 
   beforeEach(async () => {
     beneficiary = new anchor.web3.Keypair();
@@ -67,5 +72,23 @@ describe("Vesting Smart Contract Tests", () => {
     beneficiaryProvider.wallet = new NodeWallet(beneficiary);
 
     beneficiaryProgram = new Program<VestingDapp>(IDL as VestingDapp);
+
+    [vestingAccountKey] = PublicKey.findProgramAddressSync([
+      Buffer.from(companyName),
+    ], program.programId);
+
+    [treasuryTokenAccount] = PublicKey.findProgramAddressSync(
+      [
+        Buffer.from("vesting_treasury"),
+        Buffer.from(companyName),
+      ],
+      program.programId,
+    );
+
+    [employeeAccount] = PublicKey.findProgramAddressSync([
+      Buffer.from("employee_vesting"),
+      beneficiary.publicKey,
+      vestingAccountKey,
+    ], program.programId);
   });
 });
