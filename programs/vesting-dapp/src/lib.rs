@@ -68,6 +68,7 @@ pub mod vesting_dapp {
             return Err(ErrorCode::InvalidVestingPeriod.into())
         }
 
+
         // If current time is after the end time then all tokens are unlocked
         let vested_amount = if now >= (employee_account.end_time as i64) {
             employee_account.total_amount
@@ -93,16 +94,18 @@ pub mod vesting_dapp {
         let transfer_cpi_account = TransferChecked {
             from: ctx.accounts.treasury_token_account.to_account_info(), // treasury account
             mint: ctx.accounts.mint.to_account_info(),
-            to: employee_account.to_account_info(),
+            to: ctx.accounts.employee_token_account.to_account_info(),
             authority: ctx.accounts.treasury_token_account.to_account_info(),
         };
 
         let cpi_program = ctx.accounts.token_program.to_account_info();
 
         let signer_seeds: &[&[&[u8]]] = &[
-            &[b"vesting_treasury",
-            ctx.accounts.vesting_account.company_name.as_ref(),
-            &[ctx.accounts.vesting_account.treasury_bump]]
+            &[
+                b"vesting_treasury",
+                ctx.accounts.vesting_account.company_name.as_ref(),
+                &[ctx.accounts.vesting_account.treasury_bump]
+            ]
         ];
 
         let cpi_context = CpiContext::new(cpi_program, transfer_cpi_account).with_signer(signer_seeds);
