@@ -8,9 +8,11 @@ import IDL from "../target/idl/vesting_dapp.json";
 import { VestingDapp } from "../target/types/vesting_dapp";
 import { createMint } from "spl-token-bankrun";
 import NodeWallet from "@coral-xyz/anchor/dist/cjs/nodewallet";
+import { TOKEN_PROGRAM_ID } from "@coral-xyz/anchor/dist/cjs/utils/token";
+import path from "path";
 
 describe("Vesting Smart Contract Tests", () => {
-  let companyName = "Company Name";
+  const companyName = "Company Name";
 
   let beneficiary: Keypair;
   let context: ProgramTestContext;
@@ -87,8 +89,27 @@ describe("Vesting Smart Contract Tests", () => {
 
     [employeeAccount] = PublicKey.findProgramAddressSync([
       Buffer.from("employee_vesting"),
-      beneficiary.publicKey,
-      vestingAccountKey,
+      beneficiary.publicKey.toBuffer(),
+      vestingAccountKey.toBuffer(),
     ], program.programId);
+  });
+
+  it("should create a vesting account", async () => {
+    const tx = await program.methods.createVestingAccount(companyName).accounts(
+      {
+        signer: employer.publicKey,
+        mint,
+        tokenProgram: TOKEN_PROGRAM_ID,
+      },
+    ).rpc({
+      commitment: "confirmed",
+    });
+
+    const vestingAccountData = await program.account.vestingAccount.fetch(
+      vestingAccountKey,
+      "confirmed",
+    );
+    console.log("Creates vesting Account: ", tx);
+    console.log(vestingAccountData);
   });
 });
