@@ -10,7 +10,7 @@ declare_id!("8RBLvGLkXZkTXuA6WJhKTC1F7raEqfhBL69BkcaYTZL1");
 const ANCHOR_DISCRIMINATOR_SIZE: usize = 8;
 
 #[program]
-pub mod tokenvesting {
+pub mod vesting_dapp {
 
     use anchor_spl::token_interface;
 
