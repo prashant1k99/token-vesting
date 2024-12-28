@@ -12,7 +12,9 @@ Deployed Program ID: `8RBLvGLkXZkTXuA6WJhKTC1F7raEqfhBL69BkcaYTZL1` (Devnet)
 4. Based on the information provided on Employee Account, the tokens can be vested from the treasury account by employee
 
 ### Code:
+
 To use Smart Contract in your application:
+**Fork the repository, then create a web/ folder for frontend framework. And in your frontend application, use as below**
 ```js
 // Add the exports from app/ folder to your project fro types
 import { IDL, VestingDapp } from "../app";

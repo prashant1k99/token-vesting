@@ -150,7 +150,7 @@ pub struct CreateVestingAccount<'info> {
 
     // Needed for Account creation
     pub system_program: Program<'info, System>,
-    // Needed for Token Creation
+    // Needed for Mint Creation
     pub token_program: Interface<'info, TokenInterface>,
 }
 
