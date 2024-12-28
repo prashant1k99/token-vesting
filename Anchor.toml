@@ -7,6 +7,9 @@ skip-lint = false
 [programs.localnet]
 vesting_dapp = "8RBLvGLkXZkTXuA6WJhKTC1F7raEqfhBL69BkcaYTZL1"
 
+[programs.devnet]
+vesting_dapp = "8RBLvGLkXZkTXuA6WJhKTC1F7raEqfhBL69BkcaYTZL1"
+
 [registry]
 url = "https://api.apr.dev"
 
@@ -16,3 +19,5 @@ wallet = "~/.config/solana/id.json"
 
 [scripts]
 test = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 tests/**/*.ts"
+deploy-local = "anchor deploy"
+deploy-devnet = "anchor deploy --provider.cluster devnet"
