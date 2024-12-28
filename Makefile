@@ -1,5 +1,7 @@
 build:
 	anchor build
-	rm -rf tests/fixtures
-	mkdir -p tests/fixtures
+	rm -f tests/fixtures/*.so
 	cp target/deploy/*.so tests/fixtures/
+	rm -f app/vesting_dapp*
+	cp target/types/* app/
+	cp target/idl/*.json app/

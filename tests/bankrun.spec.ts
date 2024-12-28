@@ -9,8 +9,7 @@ import {
   ProgramTestContext,
   startAnchor,
 } from "solana-bankrun";
-import IDL from "../target/idl/vesting_dapp.json";
-import { VestingDapp } from "../target/types/vesting_dapp";
+import { IDL, VestingDapp } from "../app";
 import { createMint, getAccount, mintTo } from "spl-token-bankrun";
 import NodeWallet from "@coral-xyz/anchor/dist/cjs/nodewallet";
 import { TOKEN_PROGRAM_ID } from "@coral-xyz/anchor/dist/cjs/utils/token";

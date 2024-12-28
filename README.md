@@ -2,7 +2,7 @@
 
 ***This program is built based on the Solana bootcamp***
 
-Deployed Program ID: 8RBLvGLkXZkTXuA6WJhKTC1F7raEqfhBL69BkcaYTZL1 (Devnet)
+Deployed Program ID: `8RBLvGLkXZkTXuA6WJhKTC1F7raEqfhBL69BkcaYTZL1` (Devnet)
 
 ### Features:
 1. Employers can come and create there account.
@@ -12,6 +12,33 @@ Deployed Program ID: 8RBLvGLkXZkTXuA6WJhKTC1F7raEqfhBL69BkcaYTZL1 (Devnet)
 4. Based on the information provided on Employee Account, the tokens can be vested from the treasury account by employee
 
 ### Code:
+To use Smart Contract in your application:
+```js
+// Add the exports from app/ folder to your project fro types
+import { IDL, VestingDapp } from "../app";
+```
+Then to use it in your react example:
+```js
+import { useConnection, useWallet } from '@solana/wallet-adapter-react';
+import { Program, AnchorProvider } from '@coral-xyz/anchor';
+
+function YourComponent() {
+  const { connection } = useConnection();
+  const wallet = useWallet();
+  
+  const provider = new AnchorProvider(
+    connection, 
+    wallet,
+    AnchorProvider.defaultOptions()
+  );
+
+  const program = new Program<VestingDapp>(
+    IDL,
+    "8RBLvGLkXZkTXuA6WJhKTC1F7raEqfhBL69BkcaYTZL1", // PROGRAM ID mentioned in top section for DevNet
+    provider
+  );
+}
+```
 To add employee account, call the method
 ```js
 import { TOKEN_PROGRAM_ID } from "@coral-xyz/anchor/dist/cjs/utils/token";
@@ -41,9 +68,7 @@ Then mint tokens in the treasury of the account
   program.programId,
 );
 // Mint tokens into the the treasury token account using the treasuryTokenAccount publicKey
-
 ```
-
 then add employees to the program for vesring;
 ```js
 [vestingAccountKey] = PublicKey.findProgramAddressSync([
