@@ -11,9 +11,10 @@ import {
 } from "solana-bankrun";
 import IDL from "../target/idl/vesting_dapp.json";
 import { VestingDapp } from "../target/types/vesting_dapp";
-import { createMint, mintTo } from "spl-token-bankrun";
+import { createMint, getAccount, mintTo } from "spl-token-bankrun";
 import NodeWallet from "@coral-xyz/anchor/dist/cjs/nodewallet";
 import { TOKEN_PROGRAM_ID } from "@coral-xyz/anchor/dist/cjs/utils/token";
+import { assert, expect } from "chai";
 
 describe("Vesting Smart Contract Tests", () => {
   const companyName = "Company Name";
@@ -117,11 +118,13 @@ describe("Vesting Smart Contract Tests", () => {
       "confirmed",
     );
 
-    console.log("Creates vesting Account: ", tx);
-    console.log(vestingAccountData);
+    console.log("Vesting Account Tx:", tx);
+
+    assert.equal(vestingAccountData.mint.toString(), mint.toString());
+    expect(vestingAccountData.companyName).equal(companyName);
   });
 
-  it("should fund teh treasuryTokenAccount", async () => {
+  it("should fund the treasuryTokenAccount", async () => {
     const amount = 10_000 * LAMPORTS_PER_SOL;
     const mintTx = await mintTo(
       banksClient,
@@ -132,15 +135,23 @@ describe("Vesting Smart Contract Tests", () => {
       amount,
     );
 
-    console.log("Mint treasury token account:", mintTx);
+    const treasuryAccount = await getAccount(banksClient, treasuryTokenAccount);
+
+    console.log("Treasury Account Tx: ", mintTx);
+    assert.equal(Number(treasuryAccount.amount), amount);
   });
 
   it("should create employee vesting account", async () => {
+    const startTime = new anchor.BN(0);
+    const cliffTime = new anchor.BN(100);
+    const endTime = new anchor.BN(200);
+    const allotedAmount = new anchor.BN(1000);
+
     const tx2 = await program.methods.createEmployeeAccount(
-      new anchor.BN(0),
-      new anchor.BN(100),
-      new anchor.BN(200),
-      new anchor.BN(0),
+      startTime,
+      endTime,
+      allotedAmount,
+      cliffTime,
     ).accounts({
       beneficiary: beneficiary.publicKey,
       vestingAccount: vestingAccountKey,
@@ -149,8 +160,18 @@ describe("Vesting Smart Contract Tests", () => {
       skipPreflight: true,
     });
 
-    console.log("Create employee vesting account:", tx2);
-    console.log("Employee account:", employeeAccount.toBase58());
+    const employeeData = await program.account.employeeAccount.fetch(
+      employeeAccount,
+      "confirmed",
+    );
+
+    console.log("Employee vesitng account creation tx: ", tx2);
+    expect(employeeData.startTime.toString()).to.equal(startTime.toString());
+    expect(employeeData.cliffTime.toString()).to.equal(cliffTime.toString());
+    expect(employeeData.endTime.toString()).to.equal(endTime.toString());
+    expect(employeeData.beneficiary.toString()).to.equal(
+      beneficiary.publicKey.toString(),
+    );
   });
 
   it("should claim tokens", async () => {
@@ -167,9 +188,16 @@ describe("Vesting Smart Contract Tests", () => {
       ),
     );
 
-    console.log("Employee account: ", employeeAccount.toBase58());
+    const beforeTreasuryBalance = await getAccount(
+      banksClient,
+      treasuryTokenAccount,
+    );
+    const beforeBalance = await program.account.employeeAccount.fetch(
+      employeeAccount,
+      "confirmed",
+    );
 
-    const tx3 = await beneficiaryProgram.methods.claimTokens(
+    await beneficiaryProgram.methods.claimTokens(
       companyName,
     ).accounts({
       tokenProgram: TOKEN_PROGRAM_ID,
@@ -177,6 +205,23 @@ describe("Vesting Smart Contract Tests", () => {
       commitment: "confirmed",
     });
 
-    console.log("Claim tokens: ", tx3);
+    const afterTreasuryBalance = await getAccount(
+      banksClient,
+      treasuryTokenAccount,
+    );
+
+    const afterBalance = await program.account.employeeAccount.fetch(
+      employeeAccount,
+      "confirmed",
+    );
+    expect(Number(beforeBalance.totalWithdrawn)).to.be.equal(
+      Number(0),
+    );
+    expect(Number(afterBalance.totalWithdrawn)).to.be.equal(
+      Number(1000),
+    );
+    expect(Number(beforeTreasuryBalance.amount)).to.be.equal(
+      Number(afterTreasuryBalance.amount) + Number(afterBalance.totalWithdrawn),
+    );
   });
 });
